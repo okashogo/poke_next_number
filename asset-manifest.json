@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/poke_next_number/static/css/main.3a5b7de6.css",
+    "main.js": "/poke_next_number/static/js/main.34bc93c7.js",
+    "static/js/453.46423c3e.chunk.js": "/poke_next_number/static/js/453.46423c3e.chunk.js",
+    "index.html": "/poke_next_number/index.html",
+    "main.3a5b7de6.css.map": "/poke_next_number/static/css/main.3a5b7de6.css.map",
+    "main.34bc93c7.js.map": "/poke_next_number/static/js/main.34bc93c7.js.map",
+    "453.46423c3e.chunk.js.map": "/poke_next_number/static/js/453.46423c3e.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.3a5b7de6.css",
+    "static/js/main.34bc93c7.js"
+  ]
+}
