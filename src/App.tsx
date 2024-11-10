@@ -11,14 +11,13 @@ const App: React.FC = () => {
     { no: number; step: Step }[]
   >([]);
   const [filteredPokemon, setFilteredPokemon] = useState<number[]>([]);
-  const [difficulty, setDifficulty] = useState<string>('easy');
   const [numberInput, setNumberInput] = useState<string>('');
   const [fromNumber, setFromNumber] = useState<number | null>(null);
   const [toNumber, setToNumber] = useState<number | null>(null);
   const [hintNumbers, setHintNumbers] = useState<number[]>([]);
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const [pokemonData, setPokemonData] = useState<any[]>([]);
-  const [openHint, setOpenHint] = useState<number>(0);
+  const [nextType, setNextType] = useState<string>('right');
 
   // フィルタ適用
   const applyFilter = () => {
@@ -59,6 +58,7 @@ const App: React.FC = () => {
     const resultStoredNumberInput = localStorage.getItem('numberInput');
     const resultStoredFromNumber = localStorage.getItem('fromNumber');
     const resultStoredToNumber = localStorage.getItem('toNumber');
+    const resultStoredNextType = localStorage.getItem('nextType');
 
     setNumberInput(resultStoredNumberInput ?? '');
     setFromNumber(
@@ -88,6 +88,8 @@ const App: React.FC = () => {
       });
     }
     setPokemonData(data);
+
+    setNextType(resultStoredNextType ?? 'right');
   }, []);
 
   useEffect(() => {
@@ -106,16 +108,6 @@ const App: React.FC = () => {
     localStorage.setItem('memorizedPokemon', JSON.stringify(memorizedPokemon));
   }, [memorizedPokemon]);
 
-  useEffect(() => {
-    if (difficulty === 'easy') {
-      setOpenHint(0);
-    } else if (difficulty === 'normal') {
-      setOpenHint(1);
-    } else if (difficulty === 'hard') {
-      setOpenHint(2);
-    }
-  }, [difficulty]);
-
   const pickRandomPokemon = () => {
     setAnswerRevealed(false);
     const weightedPokemon = filteredPokemon.flatMap((num) => {
@@ -133,16 +125,7 @@ const App: React.FC = () => {
     const randomPokemon =
       weightedPokemon[Math.floor(Math.random() * weightedPokemon.length)];
     setCurrentNumber(randomPokemon);
-    setHintNumbers([
-      randomPokemon - 4,
-      randomPokemon - 3,
-      randomPokemon - 2,
-      randomPokemon - 1,
-      randomPokemon + 1,
-      randomPokemon + 2,
-      randomPokemon + 3,
-      randomPokemon + 4,
-    ]);
+    setHintNumbers([randomPokemon - 1, randomPokemon + 1]);
   };
 
   const memorizePokemon = (step: Step) => {
@@ -165,13 +148,6 @@ const App: React.FC = () => {
           memorizedPokemon.find((pokemon) => pokemon.no === currentNumber)
         );
         setMemorizedPokemon([...memorizedPokemon, { no: currentNumber, step }]);
-      }
-      if (difficulty === 'easy') {
-        setOpenHint(0);
-      } else if (difficulty === 'normal') {
-        setOpenHint(1);
-      } else if (difficulty === 'hard') {
-        setOpenHint(2);
       }
       pickRandomPokemon();
     }
@@ -198,16 +174,19 @@ const App: React.FC = () => {
         </div>
 
         <div className="mb-4">
-          <label htmlFor="difficulty">難易度を選択:</label>
+          <label htmlFor="nextType">次の方向:</label>
           <select
-            id="difficulty"
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
+            id="nextType"
+            value={nextType}
+            onChange={(e) => {
+              setNextType(e.target.value);
+              pickRandomPokemon();
+              localStorage.setItem('nextType', e.target.value);
+            }}
             className="ml-2 border p-1 border-gray-300 rounded-md"
           >
-            <option value="easy">簡単</option>
-            <option value="normal">普通</option>
-            <option value="hard">難しい</option>
+            <option value="right">右の答え</option>
+            <option value="left">左の答え</option>
           </select>
         </div>
 
@@ -263,43 +242,18 @@ const App: React.FC = () => {
       {/* ポケモン番号のヒント表示 */}
       <div className="w-full flex justify-center">
         <div className="w-[380px]">
-          <div className="flex justify-between">
-            <PokemonBox
-              hintNumber={hintNumbers[0]}
-              name={
-                pokemonData.find(
-                  (pokemon) => pokemon['No'] === hintNumbers[0]
-                )?.['name']
-              }
-            />
-            <PokemonBox
-              hintNumber={hintNumbers[1]}
-              name={
-                pokemonData.find(
-                  (pokemon) => pokemon['No'] === hintNumbers[1]
-                )?.['name']
-              }
-            />
-            <PokemonBox
-              hintNumber={hintNumbers[2]}
-              name={
-                pokemonData.find(
-                  (pokemon) => pokemon['No'] === hintNumbers[2]
-                )?.['name']
-              }
-              isHidden={difficulty === 'hard' && openHint === 2}
-            />
-          </div>
-          <div className="flex justify-between">
-            <PokemonBox
-              hintNumber={hintNumbers[3]}
-              name={
-                pokemonData.find(
-                  (pokemon) => pokemon['No'] === hintNumbers[3]
-                )?.['name']
-              }
-              isHidden={difficulty !== 'easy' && openHint !== 0}
-            />
+          <div className="flex justify-between mx-[30px]">
+            {nextType === 'right' && (
+              <PokemonBox
+                hintNumber={hintNumbers[0]}
+                name={
+                  pokemonData.find(
+                    (pokemon) => pokemon['No'] === hintNumbers[0]
+                  )?.['name']
+                }
+                isHidden={false}
+              />
+            )}
             <PokemonBox
               hintNumber={currentNumber!}
               name={
@@ -309,42 +263,17 @@ const App: React.FC = () => {
               }
               isHidden={!answerRevealed}
             />
-            <PokemonBox
-              hintNumber={hintNumbers[4]}
-              name={
-                pokemonData.find(
-                  (pokemon) => pokemon['No'] === hintNumbers[4]
-                )?.['name']
-              }
-              isHidden={difficulty !== 'easy' && openHint !== 0}
-            />
-          </div>
-          <div className="flex justify-between">
-            <PokemonBox
-              hintNumber={hintNumbers[5]}
-              name={
-                pokemonData.find(
-                  (pokemon) => pokemon['No'] === hintNumbers[5]
-                )?.['name']
-              }
-              isHidden={difficulty === 'hard' && openHint === 2}
-            />
-            <PokemonBox
-              hintNumber={hintNumbers[6]}
-              name={
-                pokemonData.find(
-                  (pokemon) => pokemon['No'] === hintNumbers[6]
-                )?.['name']
-              }
-            />
-            <PokemonBox
-              hintNumber={hintNumbers[7]}
-              name={
-                pokemonData.find(
-                  (pokemon) => pokemon['No'] === hintNumbers[7]
-                )?.['name']
-              }
-            />
+            {nextType === 'left' && (
+              <PokemonBox
+                hintNumber={hintNumbers[1]}
+                name={
+                  pokemonData.find(
+                    (pokemon) => pokemon['No'] === hintNumbers[1]
+                  )?.['name']
+                }
+                isHidden={false}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -409,28 +338,12 @@ const App: React.FC = () => {
         </div>
       </div>
       <div className="flex items-center justify-center gap-[100px] mt-[40px] mb-[100px]">
-        {openHint === 0 ? (
-          <button
-            className="cursor-pointer text-blue-500 px-4 py-2 rounded-md"
-            onClick={() => setAnswerRevealed(true)}
-          >
-            {'答えをみる'}
-          </button>
-        ) : openHint === 1 ? (
-          <button
-            className="cursor-pointer text-blue-500 px-4 py-2 rounded-md"
-            onClick={() => setOpenHint(0)}
-          >
-            {'ヒント1'}
-          </button>
-        ) : (
-          <button
-            className="cursor-pointer text-blue-500 px-4 py-2 rounded-md"
-            onClick={() => setOpenHint(1)}
-          >
-            {'ヒント2'}
-          </button>
-        )}
+        <button
+          className="cursor-pointer text-blue-500 px-4 py-2 rounded-md"
+          onClick={() => setAnswerRevealed(true)}
+        >
+          {'答えをみる'}
+        </button>
       </div>
     </div>
   );
