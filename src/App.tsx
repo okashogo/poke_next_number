@@ -125,7 +125,12 @@ const App: React.FC = () => {
     const randomPokemon =
       weightedPokemon[Math.floor(Math.random() * weightedPokemon.length)];
     setCurrentNumber(randomPokemon);
-    setHintNumbers([randomPokemon - 1, randomPokemon + 1]);
+    setHintNumbers([
+      randomPokemon - 1,
+      randomPokemon + 1,
+      randomPokemon - 20,
+      randomPokemon + 20,
+    ]);
   };
 
   const memorizePokemon = (step: Step) => {
@@ -187,6 +192,8 @@ const App: React.FC = () => {
           >
             <option value="right">右の答え</option>
             <option value="left">左の答え</option>
+            <option value="top">上の答え</option>
+            <option value="bottom">下の答え</option>
           </select>
         </div>
 
@@ -242,7 +249,20 @@ const App: React.FC = () => {
       {/* ポケモン番号のヒント表示 */}
       <div className="w-full flex justify-center">
         <div className="w-[380px]">
-          <div className="flex justify-between mx-[30px]">
+          {nextType === 'bottom' && (
+            <div className="flex justify-center gap-[30px]">
+              <PokemonBox
+                hintNumber={hintNumbers[2]}
+                name={
+                  pokemonData.find(
+                    (pokemon) => pokemon['No'] === hintNumbers[2]
+                  )?.['name']
+                }
+                isHidden={false}
+              />
+            </div>
+          )}
+          <div className="flex justify-center gap-[30px]">
             {nextType === 'right' && (
               <PokemonBox
                 hintNumber={hintNumbers[0]}
@@ -275,6 +295,19 @@ const App: React.FC = () => {
               />
             )}
           </div>
+          {nextType === 'top' && (
+            <div className="flex justify-center gap-[30px]">
+              <PokemonBox
+                hintNumber={hintNumbers[3]}
+                name={
+                  pokemonData.find(
+                    (pokemon) => pokemon['No'] === hintNumbers[3]
+                  )?.['name']
+                }
+                isHidden={false}
+              />
+            </div>
+          )}
         </div>
       </div>
 
